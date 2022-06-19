@@ -1,101 +1,269 @@
 <template>
   <div>
-    <!-- <a-list item-layout="horizontal" :data-source="wordLine" class="list w-1/2">
-      <template #renderItem="{ item }">
+    <a-list item-layout="horizontal" :data-source="wordLine" class="list w-2/3">
+      <template #renderItem="{ item, index }">
         <a-list-item
-          ><span class="word_line text-left text-lg">
-            {{ item }}
+          ><span
+            class="word_line text-left"
+            v-for="(singleWord, lineIndex) in item"
+            :key="lineIndex"
+            :class="
+              isTure[lineIndex + index * setLineNum] === 1
+                ? 'true'
+                : isTure[lineIndex + index * setLineNum] === 2
+                ? 'false'
+                : ''
+            "
+          >
+            {{ singleWord }}
           </span></a-list-item
         >
         <a-list-item
           ><a-input
-            v-model:value="inputValue"
+            class="inputCom"
+            :ref="(el) => (input[index] = el)"
+            v-model:value="inputValue[index]"
             size="large"
-            placeholder="large size"
-        /></a-list-item>
-      </template>
-    </a-list> -->
-    <a-list item-layout="horizontal" :data-source="wordLine" class="list w-1/2">
-      <template #renderItem="{ item }">
-        <a-list-item
-          ><span class="word_line text-left">
-            {{ item }}
-          </span></a-list-item
+            :bordered="false"
+            @change="inputCode(index), startTime()"
+            @keydown.delete="backSpace(index)"
+            :placeholder="index"
+            :disabled="
+              totalNum === wordLength
+                ? true
+                : false || nowIndex === index
+                ? false
+                : true
+            "
+          />{{ totalNum }},{{ wordLength }}</a-list-item
         >
       </template>
     </a-list>
-    <div class="input_body w-1/2">
-      <a-textarea
-        class="input_area"
-        v-model:value="inputValue"
-        size="large"
-        placeholder="large size"
-        :rows="wordLine.length"
-      />
+
+    <div class="absolute top-0 left-0 flex flex-col">
+      <span>正确率:{{ accuracy }}</span>
+      <span>错误数:{{ errorNum }}</span>
+      <span>退格数:{{ backSpaceNum }}</span>
+      <span>总字数:{{ totalNum }}</span>
+      <span>速度:{{ wpm }}</span>
     </div>
   </div>
 </template>
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch, getCurrentInstance } from "vue";
+import { Pinyin } from "../tool/ToolGood.Words.Pinyin.js";
+const { proxy } = getCurrentInstance();
 onMounted(() => {
-  cutWord();
-  combineWordLine(20);
+  cutWord(data.value, 0);
+  combineWordLine(setLineNum.value);
+  getPinYin(data.value);
 });
 
 let data = ref(
   "黑龙江省是冰灯的发源地，早期的冰灯是松嫩平原的农民和松花江流域的渔民冬季的照明工具。主要的制作过程是，把水倒入桶中进行冷冻形成桶状冰坨，再倒出中间未冻的清水，形成中空的“灯罩”，将灯（主要是油灯或蜡烛）放入，便不会被寒风吹灭。后来，人们在春节和元宵节期间也制做冰灯摆在门前，或烫孔穿绳让孩子提着玩，用以增加节日气氛，即形成了民间艺术的雏形。"
 );
+let pinyinList = reactive([]);
 
-let inputValue = ref("");
-
+// let data = ref("123");
+// input ref
+let input = ref([]);
+// 输入的内容
+let inputValue = reactive([""]);
+// 存储拆分后的文章
 let word = reactive([]);
+// 存储拆分后的文章的长度
+let wordLength = ref(0);
+// 存储输入后拆分的文章
+let inputWord = reactive([]);
+// 每一行显示的文章
 let wordLine = reactive([]);
+// 当前所在行
+let nowIndex = ref(0);
+// 设置一行显示多少字
+let setLineNum = ref(20);
+// 判断该字是否输入正确
+let isTure = reactive([]);
+// 正确率
+let accuracy = ref("0");
+// 正确数
+let correctNum = ref(0);
+// 错误数
+let errorNum = ref(0);
+// 退格数
+let backSpaceNum = ref(0);
+// 总字数
+let totalNum = ref(0);
+// 计时器
+let timer;
+// 每分钟打字数WPM
+let wpm = ref(0);
 
-let offset = ref(0);
-
-const cutWord = () => {
-  for (let i = 0; i < data.value.length; i++) {
-    word[i] = data.value[i];
+// 监听退格事件
+const backSpace = (indexs) => {
+  // 当输入内容不为空时，退格数加1
+  if (inputValue[0].length != 0) {
+    backSpaceNum.value++;
   }
-  console.log(word);
+  // 当该行内容为0，并且非第一行时，按下退格键，会自动定位至上一个输入框
+  if (inputValue[indexs].length === 0 && indexs != 0) {
+    nowIndex.value = indexs - 1;
+    setTimeout(() => {
+      input.value[nowIndex.value].focus();
+    }, 0);
+  }
 };
 
+// 监听输入事件
+const inputCode = (indexs) => {
+  if (inputValue[indexs].length >= setLineNum.value) {
+    // 如果超过5字符，将超过部分分给下一个输入框
+    inputValue[indexs + 1] = inputValue[indexs].slice(setLineNum.value);
+    // 删除超出部分
+    // inputValue[indexs] = inputValue[indexs].replace(
+    //   inputValue[indexs].slice(setLineNum.value),
+    //   ""
+    // );
+    // 去前setLineNum.value部分
+    inputValue[indexs] = inputValue[indexs].slice(0, setLineNum.value);
+    // console.log(inputValue[indexs]);
+    // index表示当前所在行
+    nowIndex.value = indexs + 1;
+    // 自动切换输入框焦点
+    setTimeout(() => {
+      input.value[nowIndex.value].focus();
+    }, 0);
+  }
+};
+// 监听输入数据，大于设置数，则自动切换下一行
+watch(inputValue, (newVal, oldVal) => {
+  let result = inputValue.join("");
+  cutWord(result, 1);
+  contrast(word, inputWord);
+  // 监听是否完成
+  complete();
+});
+
+// 将文字拆分成单个数组
+// type为0时拆分原文章，为1拆分输入的文章
+const cutWord = (article, type) => {
+  if (type === 0) {
+    for (let i = 0; i < article.length; i++) {
+      word[i] = article[i];
+    }
+    wordLength.value = word.length;
+  } else {
+    inputWord = [];
+    for (let i = 0; i < article.length; i++) {
+      inputWord[i] = article[i];
+    }
+    totalNum.value = inputWord.length;
+  }
+};
+
+// 给每行赋值
 const combineWordLine = (wordage) => {
-  const maxLine = word.length / wordage + 1;
+  // 按照设置的每行字数，计算处所需多少行
+  const maxLine = word.length / wordage;
+  // 给每行赋值
   for (let i = 0; i < maxLine; i++) {
     wordLine[i] = word.slice(wordage * i, wordage * (i + 1)).join("");
   }
-  console.log(wordLine);
+  // console.log(wordLine);
+};
+
+const getPinYin = (words) => {
+  let pinyin = new Pinyin();
+  // 获取全拼
+  for (let i = 0; i < words.length; i++) {
+    pinyinList[i] = pinyin.GetPinyin(words[i], true);
+  }
+  // pinyinList
+  console.log(pinyinList);
+};
+
+const contrast = (article, inputContent) => {
+  correctNum.value = 0;
+  errorNum.value = 0;
+  for (let i = 0; i < inputContent.length; i++) {
+    // 正确的输入
+    if (article[i] === inputContent[i]) {
+      isTure[i] = 1;
+      correctNum.value++;
+      // console.log(isTure[i]);
+    }
+    // 错误的输入
+    else if (article[i] != inputContent[i]) {
+      isTure[i] = 2;
+      errorNum.value++;
+      // console.log(inputContent[i], i);
+    }
+  }
+  // 计算正确率
+  if (totalNum.value != 0) {
+    accuracy.value =
+      ((correctNum.value / totalNum.value) * 100).toFixed(2) + "%";
+  } else {
+    accuracy.value = 0;
+  }
+  for (let j = inputContent.length; j < article.length; j++) {
+    isTure[j] = 0;
+  }
+};
+// 是否开始计时
+// @change.once会触发两次，暂时不知道为什么，先用这种方法
+let startTiming = ref(true);
+// 开始计时
+const startTime = () => {
+  if (startTiming.value) {
+    startTiming.value = false;
+    let nowTime = new Date();
+    timer = setInterval(() => {
+      const now = timepiece(nowTime);
+      wpm.value = ((correctNum.value / now.totalSec) * 60).toFixed(0);
+      // console.log(now);
+    }, 1000);
+  }
+};
+// 计时器
+const timepiece = (nowTime) => {
+  const diffTime = proxy.dayjs.duration(proxy.dayjs() - nowTime);
+  // const day = diffTime.days(); //天
+  // const hours = diffTime.hours(); //小时
+  const minutes = diffTime.minutes(); //分钟
+  const seconds = diffTime.seconds(); //秒
+  const time = `${minutes}分${seconds}秒`;
+  const totalSec = diffTime.$ms / 1000;
+  return { time, totalSec };
+};
+// 监听是否完成，完成则结束计时器
+const complete = () => {
+  if (inputWord.length == word.length) {
+    console.log("stop");
+    console.log(wpm.value);
+    clearInterval(timer);
+  }
 };
 </script>
 <style lang="scss">
 .list {
   margin: 10px auto;
   font-size: 22px;
-}
-.input_body {
-  margin: 10px auto;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
+  .ant-list-item {
+    display: flex;
+    justify-content: flex-start;
+  }
 }
 
-.input_area {
-  background: none;
+.inputCom {
+  padding: 0;
   font-size: 22px;
 }
 
-.ant-list-item {
-  height: 100px;
+.true {
+  color: green;
 }
 
-textarea.ant-input {
-  line-height: 100px !important;
-}
-
-.ant-list-item {
-  padding: 0 11px 50px 11px;
+.false {
+  color: red;
 }
 </style>
