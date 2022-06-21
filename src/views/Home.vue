@@ -12,34 +12,38 @@
       <template #renderItem="{ item, index }">
         <a-list-item>
           <div class="flex flex-col">
-            <div v-if="isShowPinYin">
+            <div class="word_body" v-if="isShowPinYin">
               <span
                 class="pinyin_line text-left"
                 v-for="(singlePinYin, lineIndex) in item.pp"
                 :key="lineIndex"
-                :class="
+                :class="[
                   isTure[lineIndex + index * setLineNum] === 1
                     ? 'true'
                     : isTure[lineIndex + index * setLineNum] === 2
                     ? 'false'
-                    : ''
-                "
+                    : '',
+                  item.ii[lineIndex] === 0 ? 'half_word' : '',
+                  item.ii[lineIndex] === 1 ? 'half_word' : '',
+                ]"
               >
                 {{ singlePinYin }}
               </span>
             </div>
-            <div>
+            <div class="word_body">
               <span
                 class="word_line text-left"
                 v-for="(singleWord, lineIndex) in item.ww"
                 :key="lineIndex"
-                :class="
+                :class="[
                   isTure[lineIndex + index * setLineNum] === 1
                     ? 'true'
                     : isTure[lineIndex + index * setLineNum] === 2
                     ? 'false'
-                    : ''
-                "
+                    : '',
+                  item.ii[lineIndex] === 0 ? 'half_word' : '',
+                  item.ii[lineIndex] === 1 ? 'half_word isblank' : '',
+                ]"
               >
                 {{ singleWord }}
               </span>
@@ -97,6 +101,7 @@
 <script setup>
 import { onMounted, reactive, ref, watch, getCurrentInstance } from "vue";
 import { Pinyin } from "../tool/ToolGood.Words.Pinyin.js";
+import { isABCorNum } from "@/tool/isABCorNum.js";
 import Upload from "./modules/upload.vue";
 import CommonForm from "./modules/form.vue";
 const { proxy } = getCurrentInstance();
@@ -215,7 +220,14 @@ watch(inputValue, (newVal, oldVal) => {
 const cutWord = (article, type) => {
   if (type === 0) {
     for (let i = 0; i < article.length; i++) {
-      word[i] = article[i];
+      /********************************** 
+      暂时没打算做换行，先将换行符改成空格，之后再改！！！！！
+      ************************/
+      if (article[i] === "\n") {
+        word[i] = " ";
+      } else {
+        word[i] = article[i];
+      }
     }
     wordLength.value = word.length;
     console.log(word);
@@ -239,9 +251,22 @@ const combineWordLine = (wordage) => {
     // wordLine[i] = word.slice(wordage * i, wordage * (i + 1)).join("");
     let lineWord = word.slice(wordage * i, wordage * (i + 1)).join("");
     let linePinyin = pinyinList.slice(wordage * i, wordage * (i + 1));
+    let isType = [];
+    for (let j = 0; j < wordage; j++) {
+      // 如果是字母或者数字
+      if (isABCorNum(lineWord[j]) === 0) {
+        isType[j] = 0;
+        // 如果是空格
+      } else if (isABCorNum(lineWord[j]) === 1) {
+        isType[j] = 1;
+      } else {
+        isType[j] = 2;
+      }
+    }
     wordLine.push({
       ww: lineWord,
       pp: linePinyin,
+      ii: isType,
     });
   }
   console.log(wordLine);
@@ -333,12 +358,17 @@ const complete = () => {
       // margin: 0 7px;
       text-align: center;
     }
-    .word_line {
-      display: inline-block;
-      font-size: 22px;
-      width: 36px;
-      // margin: 0 7px;
-      text-align: center;
+    .word_body {
+      display: flex;
+      .word_line {
+        // display: inline-block;
+        font-size: 22px;
+        width: 36px;
+        height: 36px;
+        line-height: 36px;
+        // margin: 0 7px;
+        text-align: center;
+      }
     }
   }
 }
@@ -348,7 +378,8 @@ const complete = () => {
   padding-left: 6px;
   font-size: 22px;
   letter-spacing: 14px;
-  font-family: 楷体, Lucida Console;
+  font-family: 幼圆;
+  font-weight: bold;
 }
 
 .true {
@@ -357,6 +388,16 @@ const complete = () => {
 
 .false {
   color: red;
+}
+// 占位半格
+.half_word {
+  width: 25px !important;
+}
+// 空格
+.isblank {
+}
+.isblank:before {
+  content: "`";
 }
 
 .result_card {
@@ -381,11 +422,4 @@ const complete = () => {
     }
   }
 }
-
-// <div class="time">时间:{{ timeShow }}</div>
-//         <div class="accuracy">正确率:{{ accuracy }}</div>
-//         <div class="errorNum">错误数:{{ errorNum }}</div>
-//         <div class="backSpaceNum">退格数:{{ backSpaceNum }}</div>
-//         <div class="totalNum">总字数:{{ totalNum }}</div>
-//         <div class="wpm">速度:{{ wpm }}</div>
 </style>

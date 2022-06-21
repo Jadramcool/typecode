@@ -1,1 +1,1 @@
-var str = search.Replace(test, '*');
+var str = search.Replace(test, "*");
