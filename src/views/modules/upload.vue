@@ -1,32 +1,56 @@
 <template>
   <a-upload
-    v-model:file-list="fileList"
-    name="file"
-    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-    :headers="headers"
-    @change="handleChange"
+    :file-list="fileList"
+    :before-upload="beforeUpload"
+    @remove="handleRemove"
+    :max-count="1"
   >
     <a-button>
       <upload-outlined></upload-outlined>
-      Click to Upload
+      Select File
     </a-button>
   </a-upload>
+  <a-button
+    type="primary"
+    :disabled="fileList.length === 0"
+    :loading="uploading"
+    style="margin-top: 16px"
+    @click="handleUpload"
+  >
+    {{ uploading ? "Uploading" : "Start Upload" }}
+  </a-button>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import request from "umi-request";
+import { ref, getCurrentInstance } from "vue";
 import { UploadOutlined } from "@ant-design/icons-vue";
+import { uploadWord } from "@/api/upload";
+const { proxy } = getCurrentInstance();
 const fileList = ref([]);
-const handleChange = (info) => {
-  if (info.file.status !== "uploading") {
-    console.log(info.file, info.fileList);
-  }
+const uploading = ref(false);
+const handleRemove = (file) => {
+  const index = fileList.value.indexOf(file);
+  const newFileList = fileList.value.slice();
+  newFileList.splice(index, 1);
+  fileList.value = newFileList;
+};
 
-  if (info.file.status === "done") {
-    message.success(`${info.file.name} file uploaded successfully`);
-  } else if (info.file.status === "error") {
-    message.error(`${info.file.name} file upload failed.`);
-  }
+const beforeUpload = (file) => {
+  console.log(file);
+  fileList.value[0] = file;
+  // fileList.value = [...fileList.value, file];
+  return false;
+};
+
+const handleUpload = async () => {
+  let param = new FormData(); // 创建form对象
+  param.append("file", fileList.value[0], fileList.value[0].name); // 通过append向form对象添加数据
+  param.append("chunk", "0"); // 添加form表单中其他数据
+  uploading.value = true;
+  const res = await uploadWord(param);
+  console.log(res);
+  uploading.value = false;
 };
 </script>
 

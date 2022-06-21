@@ -1,10 +1,11 @@
 <template>
   <div>
-    <div class="control">
+    <div class="control w-1/4">
       <div class="switch">
         是否展示拼音:<a-switch v-model:checked="isShowPinYin" />
       </div>
       <Upload></Upload>
+      <CommonForm @change-article="getArticle"></CommonForm>
     </div>
 
     <a-list item-layout="horizontal" :data-source="wordLine" class="list w-1/2">
@@ -14,7 +15,7 @@
             <div v-if="isShowPinYin">
               <span
                 class="pinyin_line text-left"
-                v-for="(singleWord, lineIndex) in item.pp"
+                v-for="(singlePinYin, lineIndex) in item.pp"
                 :key="lineIndex"
                 :class="
                   isTure[lineIndex + index * setLineNum] === 1
@@ -24,7 +25,7 @@
                     : ''
                 "
               >
-                {{ singleWord }}
+                {{ singlePinYin }}
               </span>
             </div>
             <div>
@@ -51,10 +52,9 @@
             :ref="(el) => (input[index] = el)"
             v-model:value="inputValue[index]"
             size="large"
-            :bordered="false"
+            :bordered="true"
             @change="inputCode(index), startTime()"
             @keydown.delete="backSpace(index)"
-            :placeholder="index"
             :disabled="
               totalNum === wordLength
                 ? true
@@ -62,41 +62,43 @@
                 ? false
                 : true
             "
-          />{{ totalNum }},{{ wordLength }}</a-list-item
-        >
+        /></a-list-item>
       </template>
     </a-list>
-    <a-card title="计分板" class="result_card">
-      <div class="card_body flex flex-col">
-        <div class="time">{{ timeShow }}</div>
-        <div class="accuracy">
-          正确率:&emsp;<span>{{ accuracy }}</span
-          >&emsp;%
+    <div class="w-1/4">
+      <a-card title="计分板" class="result_card">
+        <div class="card_body flex flex-col">
+          <div class="time">{{ timeShow }}</div>
+          <div class="accuracy">
+            正确率:&emsp;<span>{{ accuracy }}</span
+            >&emsp;%
+          </div>
+          <div class="errorNum">
+            错&emsp;误:&emsp;<span>{{ errorNum }}</span
+            >&emsp;字
+          </div>
+          <div class="backSpaceNum">
+            退&emsp;格:&emsp;<span>{{ backSpaceNum }}</span
+            >&emsp;次
+          </div>
+          <div class="totalNum">
+            总字数:&emsp;<span>{{ totalNum }}</span
+            >&emsp;字
+          </div>
+          <div class="wpm">
+            速&emsp;度:&emsp;<span>{{ wpm }}</span
+            >&emsp;wpm
+          </div>
         </div>
-        <div class="errorNum">
-          错&emsp;误:&emsp;<span>{{ errorNum }}</span
-          >&emsp;字
-        </div>
-        <div class="backSpaceNum">
-          退&emsp;格:&emsp;<span>{{ backSpaceNum }}</span
-          >&emsp;次
-        </div>
-        <div class="totalNum">
-          总字数:&emsp;<span>{{ totalNum }}</span
-          >&emsp;字
-        </div>
-        <div class="wpm">
-          速&emsp;度:&emsp;<span>{{ wpm }}</span
-          >&emsp;wpm
-        </div>
-      </div>
-    </a-card>
+      </a-card>
+    </div>
   </div>
 </template>
 <script setup>
 import { onMounted, reactive, ref, watch, getCurrentInstance } from "vue";
 import { Pinyin } from "../tool/ToolGood.Words.Pinyin.js";
 import Upload from "./modules/upload.vue";
+import CommonForm from "./modules/form.vue";
 const { proxy } = getCurrentInstance();
 onMounted(() => {
   cutWord(data.value, 0);
@@ -104,9 +106,16 @@ onMounted(() => {
   combineWordLine(setLineNum.value);
 });
 
-let data = ref(
-  "黑龙江省是冰灯的发源地，早期的冰灯是松嫩平原的农民和松花江流域的渔民冬季的照明工具。主要的制作过程是，把水倒入桶中进行冷冻形成桶状冰坨，再倒出中间未冻的清水，形成中空的“灯罩”，将灯（主要是油灯或蜡烛）放入，便不会被寒风吹灭。后来，人们在春节和元宵节期间也制做冰灯摆在门前，或烫孔穿绳让孩子提着玩，用以增加节日气氛，即形成了民间艺术的雏形。"
-);
+// let data = ref(
+//   "黑龙江省是冰灯的发源地，早期的冰灯是松嫩平原的农民和松花江流域的渔民冬季的照明工具。主要的制作过程是，把水倒入桶中进行冷冻形成桶状冰坨，再倒出中间未冻的清水，形成中空的“灯罩”，将灯（主要是油灯或蜡烛）放入，便不会被寒风吹灭。后来，人们在春节和元宵节期间也制做冰灯摆在门前，或烫孔穿绳让孩子提着玩，用以增加节日气氛，即形成了民间艺术的雏形。"
+// );
+
+let data = ref("测试你\n\n行1好你x好。\n\n我喜欢你。");
+
+// let data = ref(
+//   `<p>Test</p><p>测试</p><p>你好你好你好。我喜欢你。我爱你</p><p>怎么说呢    哈哈哈</p>`
+// );
+
 let pinyinList = reactive([]);
 
 // let data = ref("123");
@@ -145,7 +154,16 @@ let wpm = ref(0);
 // 计时器展示
 let timeShow = ref("00:00");
 // 是否展示拼音
-let isShowPinYin = ref(false);
+let isShowPinYin = ref(true);
+
+const getArticle = (info) => {
+  data.value = info;
+  console.log(data.value);
+  word = [];
+  cutWord(data.value, 0);
+  getPinYin(data.value);
+  combineWordLine(setLineNum.value);
+};
 
 // 监听退格事件
 const backSpace = (indexs) => {
@@ -200,6 +218,7 @@ const cutWord = (article, type) => {
       word[i] = article[i];
     }
     wordLength.value = word.length;
+    console.log(word);
   } else {
     inputWord = [];
     for (let i = 0; i < article.length; i++) {
@@ -211,8 +230,10 @@ const cutWord = (article, type) => {
 
 // 给每行赋值
 const combineWordLine = (wordage) => {
+  wordLine.length = 0;
   // 按照设置的每行字数，计算处所需多少行
   const maxLine = word.length / wordage;
+
   // 给每行赋值
   for (let i = 0; i < maxLine; i++) {
     // wordLine[i] = word.slice(wordage * i, wordage * (i + 1)).join("");
@@ -223,13 +244,14 @@ const combineWordLine = (wordage) => {
       pp: linePinyin,
     });
   }
+  console.log(wordLine);
 };
 
 const getPinYin = (words) => {
   let pinyin = new Pinyin();
   // 获取全拼
   for (let i = 0; i < words.length; i++) {
-    pinyinList[i] = pinyin.GetPinyin(words[i], true);
+    pinyinList[i] = pinyin.GetPinyin(words[i]);
   }
 };
 
@@ -308,12 +330,14 @@ const complete = () => {
       display: inline-block;
       font-size: 14px;
       width: 36px;
+      // margin: 0 7px;
       text-align: center;
     }
     .word_line {
       display: inline-block;
       font-size: 22px;
       width: 36px;
+      // margin: 0 7px;
       text-align: center;
     }
   }
@@ -324,6 +348,7 @@ const complete = () => {
   padding-left: 6px;
   font-size: 22px;
   letter-spacing: 14px;
+  font-family: 楷体, Lucida Console;
 }
 
 .true {
