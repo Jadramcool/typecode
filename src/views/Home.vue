@@ -1,11 +1,18 @@
 <template>
-  <div>
+  <div class="flex">
     <div class="control w-1/4">
       <div class="switch">
         是否展示拼音:<a-switch v-model:checked="isShowPinYin" />
       </div>
       <Upload></Upload>
       <CommonForm @change-article="getArticle"></CommonForm>
+      <Operate
+        :isStart="isStart"
+        @pause="pauseTime"
+        @stop="stopTime"
+        @reset="resetTime"
+      ></Operate>
+      <a-button type="warning" @click="showResult">测试</a-button>
     </div>
 
     <a-list item-layout="horizontal" :data-source="wordLine" class="list w-1/2">
@@ -60,7 +67,7 @@
             @change="inputCode(index), startTime()"
             @keydown.delete="backSpace(index)"
             :disabled="
-              totalNum === wordLength
+              stopDisabled || totalNum === wordLength
                 ? true
                 : false || nowIndex === index
                 ? false
@@ -96,14 +103,25 @@
         </div>
       </a-card>
     </div>
+    <Result :completeResult="completeResult"></Result>
   </div>
 </template>
 <script setup>
 import { onMounted, reactive, ref, watch, getCurrentInstance } from "vue";
 import { Pinyin } from "../tool/ToolGood.Words.Pinyin.js";
 import { isABCorNum } from "@/tool/isABCorNum.js";
+// 左侧上传
 import Upload from "./modules/upload.vue";
+// 左侧文章选择表单
 import CommonForm from "./modules/form.vue";
+// 左侧操作菜单
+import Operate from "./modules/operate.vue";
+// 结果展示菜单
+import Result from "./modules/result.vue";
+
+import { storeToRefs } from "pinia";
+import { mainStore } from "@/store/index";
+const store = mainStore();
 const { proxy } = getCurrentInstance();
 onMounted(() => {
   cutWord(data.value, 0);
@@ -115,7 +133,9 @@ onMounted(() => {
 //   "黑龙江省是冰灯的发源地，早期的冰灯是松嫩平原的农民和松花江流域的渔民冬季的照明工具。主要的制作过程是，把水倒入桶中进行冷冻形成桶状冰坨，再倒出中间未冻的清水，形成中空的“灯罩”，将灯（主要是油灯或蜡烛）放入，便不会被寒风吹灭。后来，人们在春节和元宵节期间也制做冰灯摆在门前，或烫孔穿绳让孩子提着玩，用以增加节日气氛，即形成了民间艺术的雏形。"
 // );
 
-let data = ref("测试你\n\n行1好你x好。\n\n我喜欢你。");
+let data = ref(
+  "测试你\n\n行1好你x好。\n\n我喜欢你。测试你\n\n行1好你x好。\n\n我喜欢你。"
+);
 
 // let data = ref(
 //   `<p>Test</p><p>测试</p><p>你好你好你好。我喜欢你。我爱你</p><p>怎么说呢    哈哈哈</p>`
@@ -154,20 +174,81 @@ let backSpaceNum = ref(0);
 let totalNum = ref(0);
 // 计时器
 let timer;
+// 计时器起始为0
+let now = ref(0);
 // 每分钟打字数WPM
 let wpm = ref(0);
+// 计时器 秒 形式
+let time = ref(0);
 // 计时器展示
 let timeShow = ref("00:00");
 // 是否展示拼音
 let isShowPinYin = ref(true);
+// 是否停止全部禁止输入
+let stopDisabled = ref(false);
+// 判断是否开始计时，是显示开始/暂停按钮
+let isStart = ref(false);
+// 完成后，传递给 result 组件的数据
+let completeResult = reactive({});
+const showResult = () => {
+  store.isShowModal = true;
+};
 
 const getArticle = (info) => {
+  // 清除计时器
+  resetTime(true);
+  // 更新文章内容
   data.value = info;
-  console.log(data.value);
-  word = [];
+  // 将单字数组清零
+  word.length = 0;
   cutWord(data.value, 0);
   getPinYin(data.value);
   combineWordLine(setLineNum.value);
+};
+
+// 计时器清零
+const resetTime = (isReset) => {
+  if (isReset) {
+    clearInterval(timer);
+    // 输入框清除
+    inputValue.length = 0;
+    now.value = 0;
+    startTiming.value = true;
+    timeShow.value = "00:00";
+    wpm.value = 0;
+    stopDisabled.value = false;
+    nowIndex.value = 0;
+    setTimeout(() => {
+      input.value[nowIndex.value].focus();
+    }, 0);
+  }
+};
+// 计时器暂停
+const pauseTime = (isPause) => {
+  if (isPause) {
+    clearInterval(timer);
+  } else {
+    startTiming.value = true;
+    startTime();
+  }
+};
+
+// 计时器停止
+const stopTime = (isStop) => {
+  if (isStop) {
+    stopDisabled.value = true;
+    isStart.value = false;
+    clearInterval(timer);
+    console.log(stopDisabled.value);
+    completeResult.time = time.value;
+    completeResult.accuracy = accuracy.value;
+    completeResult.wpm = wpm.value;
+    completeResult.totalNum = totalNum.value;
+    completeResult.wordLength = word.length;
+    completeResult.correctNum = correctNum.value;
+    store.isShowModal = true;
+    console.log(completeResult);
+  }
 };
 
 // 监听退格事件
@@ -220,7 +301,7 @@ watch(inputValue, (newVal, oldVal) => {
 const cutWord = (article, type) => {
   if (type === 0) {
     for (let i = 0; i < article.length; i++) {
-      /********************************** 
+      /**********************************
       暂时没打算做换行，先将换行符改成空格，之后再改！！！！！
       ************************/
       if (article[i] === "\n") {
@@ -232,7 +313,7 @@ const cutWord = (article, type) => {
     wordLength.value = word.length;
     console.log(word);
   } else {
-    inputWord = [];
+    inputWord.length = 0;
     for (let i = 0; i < article.length; i++) {
       inputWord[i] = article[i];
     }
@@ -251,6 +332,7 @@ const combineWordLine = (wordage) => {
     // wordLine[i] = word.slice(wordage * i, wordage * (i + 1)).join("");
     let lineWord = word.slice(wordage * i, wordage * (i + 1)).join("");
     let linePinyin = pinyinList.slice(wordage * i, wordage * (i + 1));
+    // 确定每个字符的类型；0是字母或数字，1是空格，2是普通字符
     let isType = [];
     for (let j = 0; j < wordage; j++) {
       // 如果是字母或者数字
@@ -299,7 +381,7 @@ const contrast = (article, inputContent) => {
   }
   // 计算正确率
   if (totalNum.value != 0) {
-    accuracy.value = ((correctNum.value / totalNum.value) * 100).toFixed(2);
+    accuracy.value = ((correctNum.value / totalNum.value) * 100).toFixed(0);
   } else {
     accuracy.value = 0;
   }
@@ -311,15 +393,28 @@ const contrast = (article, inputContent) => {
 // @change.once会触发两次，暂时不知道为什么，先用这种方法
 let startTiming = ref(true);
 // 开始计时
+// const startTime = () => {
+//   if (startTiming.value) {
+//     startTiming.value = false;
+//     let nowTime = new Date();
+//     timer = setInterval(() => {
+//       const now = timepiece(nowTime);
+//       wpm.value = ((correctNum.value / now.totalSec) * 60).toFixed(0);
+//       timeShow.value = now.time;
+//       // console.log(now);
+//     }, 1000);
+//   }
+// };
+
 const startTime = () => {
+  isStart.value = true;
   if (startTiming.value) {
     startTiming.value = false;
-    let nowTime = new Date();
     timer = setInterval(() => {
-      const now = timepiece(nowTime);
-      wpm.value = ((correctNum.value / now.totalSec) * 60).toFixed(0);
-      timeShow.value = now.time;
-      // console.log(now);
+      now.value += 1000;
+      time.value = now.value / 1000;
+      timeShow.value = proxy.dayjs(now.value).format("mm:ss");
+      wpm.value = ((correctNum.value / now.value) * 1000 * 60).toFixed(0);
     }, 1000);
   }
 };
@@ -340,6 +435,13 @@ const timepiece = (nowTime) => {
 const complete = () => {
   if (inputWord.length == word.length) {
     console.log("stop");
+
+    completeResult.timeShow = timeShow.value;
+    completeResult.accuracy = accuracy.value;
+    completeResult.wpm = wpm.value;
+
+    // 隐藏开始/暂停按钮
+    isStart.value = false;
     console.log(wpm.value);
     clearInterval(timer);
   }
@@ -397,7 +499,7 @@ const complete = () => {
 .isblank {
 }
 .isblank:before {
-  content: "`";
+  content: "·";
 }
 
 .result_card {

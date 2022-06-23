@@ -10,8 +10,6 @@ import {
 } from "vue-router";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn"; // import locale
-import VueAnimXyz from "@animxyz/vue3";
-import "@animxyz/core"; // Import css here if you haven't elsewhere
 import Duration from "dayjs/plugin/Duration";
 // ant 的全局消息提示
 import { message } from "ant-design-vue";
@@ -25,6 +23,5 @@ app.config.globalProperties.dayjs = dayjs;
 app.config.globalProperties.message = message;
 
 app.use(createPinia());
-app.use(VueAnimXyz);
 app.use(router);
 app.mount("#app");

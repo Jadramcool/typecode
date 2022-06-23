@@ -2,7 +2,6 @@ import request from "./request";
 
 // 用户登录
 export const login = (data) => {
-  console.log(data);
   return request({
     url: "/users/login",
     method: "POST",

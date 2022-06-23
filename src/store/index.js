@@ -19,6 +19,7 @@ export const mainStore = defineStore("main", {
       isLogin: false,
       // token
       token: localStorage.getItem("token") || "",
+      isShowModal: false,
     };
   },
   //   compute修饰一些值
@@ -34,7 +35,9 @@ export const mainStore = defineStore("main", {
     setUser(user) {
       this.user = user;
       this.isLogin = true;
-      localStorage.setItem("user", JSON.stringify(user));
+      // localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("userId", user._id);
+      localStorage.setItem("username", user.username);
     },
   },
 });
