@@ -1,24 +1,29 @@
 <template>
-  <a-upload
-    :file-list="fileList"
-    :before-upload="beforeUpload"
-    @remove="handleRemove"
-    :max-count="1"
-  >
-    <a-button>
-      <upload-outlined></upload-outlined>
-      Select File
-    </a-button>
-  </a-upload>
-  <a-button
-    type="primary"
-    :disabled="fileList.length === 0"
-    :loading="uploading"
-    style="margin-top: 16px"
-    @click="handleUpload"
-  >
-    {{ uploading ? "Uploading" : "Start Upload" }}
-  </a-button>
+  <div class="body flex ml-10 items-start">
+    <span class="font-bold">上传文件：</span>
+    <div class="upload_body flex flex-col items-start">
+      <a-upload
+        class="mb-2"
+        :file-list="fileList"
+        :before-upload="beforeUpload"
+        @remove="handleRemove"
+        :max-count="1"
+      >
+        <a-button>
+          <upload-outlined></upload-outlined>
+          选择文件
+        </a-button>
+      </a-upload>
+      <a-button
+        type="primary"
+        :disabled="fileList.length === 0"
+        :loading="uploading"
+        @click="handleUpload"
+      >
+        {{ uploading ? "Uploading" : "Start Upload" }}
+      </a-button>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -37,7 +42,7 @@ const handleRemove = (file) => {
 };
 
 const beforeUpload = (file) => {
-  console.log(file);
+  // console.log(file);
   fileList.value[0] = file;
   // fileList.value = [...fileList.value, file];
   return false;
@@ -49,7 +54,7 @@ const handleUpload = async () => {
   param.append("chunk", "0"); // 添加form表单中其他数据
   uploading.value = true;
   const res = await uploadWord(param);
-  console.log(res);
+  // console.log(res);
   uploading.value = false;
 };
 </script>

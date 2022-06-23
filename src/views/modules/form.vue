@@ -1,39 +1,42 @@
 <template>
-  <div>
-    <div class="select_user">
-      <label for="user">用户：</label>
-      <a-select
-        id="user"
-        ref="select"
-        style="width: 200px"
-        placeholder="Select a person"
-        @change="handleChange"
-      >
-        <a-select-option
-          v-for="item in userList"
-          :key="item._id"
-          :value="item._id"
-          >{{ item.username }}</a-select-option
+  <div class="ml-10">
+    <span class="font-bold">选择文章：</span>
+    <div class="form_body ml-10">
+      <div class="select_user mb-4">
+        <label for="user">用户：</label>
+        <a-select
+          id="user"
+          ref="select"
+          style="width: 200px"
+          placeholder="请选择用户"
+          @change="handleChange"
         >
-      </a-select>
-    </div>
-    <div class="select_article">
-      <label for="article">文章：</label>
-      <a-select
-        id="article"
-        ref="select"
-        v-model:value="nowValue"
-        style="width: 200px"
-        placeholder="Select a person"
-        @change="handleChangeArticle"
-      >
-        <a-select-option
-          v-for="item in articleList"
-          :key="item._id"
-          :value="item._id"
-          >{{ item.title }}</a-select-option
+          <a-select-option
+            v-for="item in userList"
+            :key="item._id"
+            :value="item._id"
+            >{{ item.username }}</a-select-option
+          >
+        </a-select>
+      </div>
+      <div class="select_article">
+        <label for="article">文章：</label>
+        <a-select
+          id="article"
+          ref="select"
+          v-model:value="nowValue"
+          style="width: 200px"
+          placeholder="Select a person"
+          @change="handleChangeArticle"
         >
-      </a-select>
+          <a-select-option
+            v-for="item in articleList"
+            :key="item._id"
+            :value="item._id"
+            >{{ item.title }}</a-select-option
+          >
+        </a-select>
+      </div>
     </div>
   </div>
 </template>
@@ -43,7 +46,9 @@ import { getUserList } from "@/api/user";
 import { getArticleList, getArticleInfo } from "@/api/article";
 import { reactive, ref } from "@vue/reactivity";
 import { onMounted } from "@vue/runtime-core";
-
+import { storeToRefs } from "pinia";
+import { mainStore } from "@/store/index";
+const store = mainStore();
 let userList = ref([]);
 let articleList = ref([]);
 let form = reactive({
@@ -66,13 +71,12 @@ onMounted(() => {
 const getUser = async () => {
   const res = await getUserList();
   userList.value = res.userList;
-  //   console.log(userList.value);
 };
 // 获取文章列表
 const getArticle = async (limit, offset, category, authorId, title) => {
   const res = await getArticleList(limit, offset, category, authorId, title);
   articleList.value = res.articles;
-  console.log(articleList.value);
+  // console.log(articleList.value);
 };
 // 获取文章详情
 const getArticleDetail = async (title) => {
@@ -91,7 +95,7 @@ const handleChange = (value) => {
 
 // 选择文章
 const handleChangeArticle = (value) => {
-  console.log(value);
+  store.articleId = value;
   getArticleDetail(value);
 };
 </script>

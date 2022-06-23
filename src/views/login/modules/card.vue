@@ -97,7 +97,6 @@ let type = props.cardType;
 // 子传父
 const emit = defineEmits(["switch"]);
 const clickTap = () => {
-  console.log(type);
   console.log(props.cardType);
   if (type === "login") {
     type = "register";

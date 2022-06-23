@@ -1,10 +1,13 @@
 <template>
-  <div>
-    <a-button v-if="isStart" type="primary" @click="pauseTime">{{
-      pauseStatus
-    }}</a-button>
-    <a-button type="danger" @click="stopTime">结束</a-button>
-    <a-button type="danger" @click="resetTime">重置</a-button>
+  <div class="ml-10">
+    <span class="font-bold">控制按钮：</span>
+    <div class="my-2">
+      <a-button class="mx-2" type="danger" @click="stopTime">结束</a-button>
+      <a-button class="mx-2" type="danger" @click="resetTime">重置</a-button>
+      <a-button class="mx-2" v-if="isStart" type="primary" @click="pauseTime">{{
+        pauseStatus
+      }}</a-button>
+    </div>
   </div>
 </template>
 
@@ -28,17 +31,14 @@ const pauseTime = () => {
   } else {
     pauseStatus.value = "暂停";
   }
-  console.log(isPause.value);
   emit("pause", isPause.value);
 };
 const stopTime = () => {
-  console.log(isStop.value);
   isStop.value = true;
   emit("stop", isStop.value);
 };
 
 const resetTime = () => {
-  console.log(isReset.value);
   isReset.value = true;
   emit("reset", isReset.value);
 };

@@ -20,6 +20,7 @@ export const mainStore = defineStore("main", {
       // token
       token: localStorage.getItem("token") || "",
       isShowModal: false,
+      articleId: "",
     };
   },
   //   compute修饰一些值

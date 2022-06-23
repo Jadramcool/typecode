@@ -10,7 +10,7 @@
       <div class="modal_body">
         <div class="title text-2xl text-center">恭喜你，完成了</div>
         <div class="time text-4xl text-center font-bold text-yellow-600 my-4">
-          {{ result.time }}
+          {{ proxy.dayjs(result.time * 1000).format("mm:ss") }}
         </div>
         <div class="progress_body flex justify-around">
           <div class="progress flex flex-col">
@@ -69,11 +69,12 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch, getCurrentInstance } from "vue";
 import { storeToRefs } from "pinia";
 import { mainStore } from "@/store/index";
 import router from "@/routes/routes";
 import { uploadResult } from "@/api/result";
+const { proxy } = getCurrentInstance();
 
 const store = mainStore();
 const props = defineProps({
@@ -121,11 +122,11 @@ onMounted(() => {});
 watch(props.completeResult, () => {
   result.speed = Number(props.completeResult.wpm);
   result.correct = Number(props.completeResult.accuracy);
-  result.correctNum = Number(props.completeResult.accuracy);
+  result.correctNum = Number(props.completeResult.correctNum);
   result.time = props.completeResult.time;
   result.inputNum = props.completeResult.totalNum;
   result.wordNum = props.completeResult.wordLength;
-
+  result.articleId = store.articleId;
   if (result.speed < 40) {
     speedAppraise.value = appraise.value[0];
   } else if (result.speed <= 60) {
@@ -158,15 +159,14 @@ const cancel = () => {
 };
 
 const watchResult = () => {
-  console.log("watchResult");
   router.push("/resultPage");
 };
 
 const submitResult = async () => {
-  console.log("submitResult");
   const res = await uploadResult({ result });
   const resultId = res.result._id;
-  console.log(resultId);
+  // 关闭弹窗
+  store.isShowModal = false;
   router.push({
     name: "resultPage",
     params: { resultId },

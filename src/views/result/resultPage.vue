@@ -21,16 +21,25 @@
     <div class="result_body">
       <div class="title">成绩统计</div>
       <div class="content">
-        <!-- <a-table :columns="columns" :data-source="data">
+        <a-table
+          :columns="columns"
+          :data-source="data"
+          bordered
+          :pagination="false"
+        >
           <template #bodyCell="{ column, text }">
             <template v-if="column.dataIndex === 'name'">
               <a>{{ text }}</a>
             </template>
           </template>
-        </a-table> -->
+        </a-table>
       </div>
     </div>
-    <a-divider />
+    <div class="operate">
+      <a-button class="btn" type="primary" @click="jumpHome">继续打字</a-button>
+      <a-button class="btn">查看成绩</a-button>
+      <a-button class="btn" type="dashed">上传文章</a-button>
+    </div>
   </div>
 </template>
 
@@ -43,41 +52,93 @@ import {
 } from "@vue/runtime-core";
 import { useRoute } from "vue-router";
 import { getResult, getTotal } from "@/api/result";
+import router from "@/routes/routes";
+import { storeToRefs } from "pinia";
+import { mainStore } from "@/store/index";
+const store = mainStore();
 const route = useRoute();
 const { proxy } = getCurrentInstance();
+
+const columns = [
+  {
+    title: " ",
+    dataIndex: "type",
+  },
+  {
+    title: "总输入正确字数",
+    dataIndex: "correctNumAll",
+  },
+  {
+    title: "总输入字数",
+    dataIndex: "inputAllNum",
+  },
+  {
+    title: "平均输入速度",
+    dataIndex: "averageSpeed",
+  },
+  {
+    title: "最高输入速度",
+    dataIndex: "maxSpeed",
+  },
+];
+
+let data = reactive([{}, {}]);
+
 let resultId = route.params.resultId;
 let theResult = reactive({});
 let resultAll = reactive({});
 
 let authorId = localStorage.getItem("userId");
-onMounted(() => {
-  getTheRequest(resultId);
-  getTotalResult(authorId);
+onMounted(async () => {
+  // getTheRequest(resultId);
+  await getTheRequest(resultId);
+  await getTotalResult(authorId);
+  await setTable();
 });
-
+// 表格数据
+const setTable = () => {
+  for (let i = 0; i < 2; i++) {
+    if (i === 0) {
+      data[i].type = "本次";
+      data[i].correctNumAll = theResult.correctNum;
+      data[i].inputAllNum = theResult.inputNum;
+      data[i].averageSpeed = theResult.speed;
+      data[i].maxSpeed = theResult.speed;
+    } else if (i === 1) {
+      data[i].type = "历史";
+      data[i].correctNumAll = resultAll.correctNumAll;
+      data[i].inputAllNum = resultAll.inputAllNum;
+      data[i].averageSpeed = resultAll.averageSpeed;
+      data[i].maxSpeed = resultAll.maxSpeed;
+    }
+  }
+};
+// 获取本次成绩
 const getTheRequest = async (id) => {
   const res = await getResult(id);
   let result = res.result;
   theResult.articleTitle = result.articleId.title;
   theResult.wordNum = result.wordNum;
   theResult.inputNum = result.inputNum;
+  theResult.correctNum = result.correctNum;
   theResult.completion = ((result.inputNum / result.wordNum) * 100).toFixed(0);
   theResult.time = proxy.dayjs(result.time * 1000).format("mm:ss");
   theResult.speed = result.speed;
   theResult.correct = result.correct;
-  console.log(theResult);
 };
-
+// 获取历史成绩（包括本次一起计算）
 const getTotalResult = async (id) => {
   const res = await getTotal(id);
   const item = res.resultAll[0];
-  console.log(item);
   resultAll.averageSpeed = item.averageSpeed;
   resultAll.correctNumAll = item.correctNumAll;
   resultAll.inputAllNum = item.inputAllNum;
   resultAll.maxSpeed = item.maxSpeed;
   resultAll.timeAll = item.timeAll;
-  console.log(resultAll);
+};
+
+const jumpHome = () => {
+  router.push("/");
 };
 </script>
 <style lang="scss" scoped>
@@ -105,6 +166,14 @@ const getTotalResult = async (id) => {
         color: rgb(225, 136, 3);
       }
     }
+  }
+}
+
+.operate {
+  text-align: center;
+  margin: 10px 0;
+  .btn {
+    margin: 0 10px;
   }
 }
 </style>

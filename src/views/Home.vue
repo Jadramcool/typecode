@@ -1,8 +1,9 @@
 <template>
   <div class="flex">
     <div class="control w-1/4">
-      <div class="switch">
-        是否展示拼音:<a-switch v-model:checked="isShowPinYin" />
+      <div class="switch w-full py-4 ml-10">
+        <span class="font-bold mr-2">是否展示拼音:</span>
+        <a-switch v-model:checked="isShowPinYin" />
       </div>
       <Upload></Upload>
       <CommonForm @change-article="getArticle"></CommonForm>
@@ -15,67 +16,75 @@
       <a-button type="warning" @click="showResult">测试</a-button>
     </div>
 
-    <a-list item-layout="horizontal" :data-source="wordLine" class="list w-1/2">
-      <template #renderItem="{ item, index }">
-        <a-list-item>
-          <div class="flex flex-col">
-            <div class="word_body" v-if="isShowPinYin">
-              <span
-                class="pinyin_line text-left"
-                v-for="(singlePinYin, lineIndex) in item.pp"
-                :key="lineIndex"
-                :class="[
-                  isTure[lineIndex + index * setLineNum] === 1
-                    ? 'true'
-                    : isTure[lineIndex + index * setLineNum] === 2
-                    ? 'false'
-                    : '',
-                  item.ii[lineIndex] === 0 ? 'half_word' : '',
-                  item.ii[lineIndex] === 1 ? 'half_word' : '',
-                ]"
-              >
-                {{ singlePinYin }}
-              </span>
+    <div class="list_body w-1/2">
+      <a-list item-layout="horizontal" :data-source="wordLine" class="list">
+        <template #renderItem="{ item, index }">
+          <a-list-item>
+            <div class="flex flex-col">
+              <div class="word_body" v-if="isShowPinYin">
+                <span
+                  class="pinyin_line text-left"
+                  v-for="(singlePinYin, lineIndex) in item.pp"
+                  :key="lineIndex"
+                  :class="[
+                    isTure[lineIndex + index * setLineNum] === 1
+                      ? 'true'
+                      : isTure[lineIndex + index * setLineNum] === 2
+                      ? 'false'
+                      : '',
+                    item.ii[lineIndex] === 0 ? 'half_word' : '',
+                    item.ii[lineIndex] === 1 ? 'half_word' : '',
+                  ]"
+                >
+                  {{ singlePinYin }}
+                </span>
+              </div>
+              <div class="word_body">
+                <span
+                  class="word_line text-left"
+                  v-for="(singleWord, lineIndex) in item.ww"
+                  :key="lineIndex"
+                  :class="[
+                    isTure[lineIndex + index * setLineNum] === 1
+                      ? 'true'
+                      : isTure[lineIndex + index * setLineNum] === 2
+                      ? 'false'
+                      : '',
+                    item.ii[lineIndex] === 0 ? 'half_word' : '',
+                    item.ii[lineIndex] === 1 ? 'half_word isblank' : '',
+                  ]"
+                >
+                  {{ singleWord }}
+                </span>
+              </div>
             </div>
-            <div class="word_body">
-              <span
-                class="word_line text-left"
-                v-for="(singleWord, lineIndex) in item.ww"
-                :key="lineIndex"
-                :class="[
-                  isTure[lineIndex + index * setLineNum] === 1
-                    ? 'true'
-                    : isTure[lineIndex + index * setLineNum] === 2
-                    ? 'false'
-                    : '',
-                  item.ii[lineIndex] === 0 ? 'half_word' : '',
-                  item.ii[lineIndex] === 1 ? 'half_word isblank' : '',
-                ]"
-              >
-                {{ singleWord }}
-              </span>
-            </div>
-          </div>
-        </a-list-item>
-        <a-list-item
-          ><a-input
-            class="inputCom"
-            :ref="(el) => (input[index] = el)"
-            v-model:value="inputValue[index]"
-            size="large"
-            :bordered="true"
-            @change="inputCode(index), startTime()"
-            @keydown.delete="backSpace(index)"
-            :disabled="
-              stopDisabled || totalNum === wordLength
-                ? true
-                : false || nowIndex === index
-                ? false
-                : true
-            "
-        /></a-list-item>
-      </template>
-    </a-list>
+          </a-list-item>
+          <a-list-item
+            ><a-input
+              class="inputCom"
+              :ref="(el) => (input[index] = el)"
+              v-model:value="inputValue[index]"
+              size="large"
+              :bordered="true"
+              @change="inputCode(index), startTime()"
+              @keydown.delete="backSpace(index)"
+              :disabled="
+                stopDisabled || totalNum === wordLength
+                  ? true
+                  : false || nowIndex === index
+                  ? false
+                  : true
+              "
+          /></a-list-item>
+        </template>
+      </a-list>
+      <div
+        v-if="data === ''"
+        class="empty text-center text-xl font-sans font-semibold"
+      >
+        暂无文章，请通过左侧操作栏 “添加文章” 添加测试文章！
+      </div>
+    </div>
     <div class="w-1/4">
       <a-card title="计分板" class="result_card">
         <div class="card_body flex flex-col">
@@ -133,9 +142,7 @@ onMounted(() => {
 //   "黑龙江省是冰灯的发源地，早期的冰灯是松嫩平原的农民和松花江流域的渔民冬季的照明工具。主要的制作过程是，把水倒入桶中进行冷冻形成桶状冰坨，再倒出中间未冻的清水，形成中空的“灯罩”，将灯（主要是油灯或蜡烛）放入，便不会被寒风吹灭。后来，人们在春节和元宵节期间也制做冰灯摆在门前，或烫孔穿绳让孩子提着玩，用以增加节日气氛，即形成了民间艺术的雏形。"
 // );
 
-let data = ref(
-  "测试你\n\n行1好你x好。\n\n我喜欢你。测试你\n\n行1好你x好。\n\n我喜欢你。"
-);
+let data = ref("");
 
 // let data = ref(
 //   `<p>Test</p><p>测试</p><p>你好你好你好。我喜欢你。我爱你</p><p>怎么说呢    哈哈哈</p>`
@@ -239,7 +246,6 @@ const stopTime = (isStop) => {
     stopDisabled.value = true;
     isStart.value = false;
     clearInterval(timer);
-    console.log(stopDisabled.value);
     completeResult.time = time.value;
     completeResult.accuracy = accuracy.value;
     completeResult.wpm = wpm.value;
@@ -247,7 +253,7 @@ const stopTime = (isStop) => {
     completeResult.wordLength = word.length;
     completeResult.correctNum = correctNum.value;
     store.isShowModal = true;
-    console.log(completeResult);
+    // console.log(completeResult);
   }
 };
 
@@ -311,7 +317,6 @@ const cutWord = (article, type) => {
       }
     }
     wordLength.value = word.length;
-    console.log(word);
   } else {
     inputWord.length = 0;
     for (let i = 0; i < article.length; i++) {
@@ -351,7 +356,7 @@ const combineWordLine = (wordage) => {
       ii: isType,
     });
   }
-  console.log(wordLine);
+  // console.log(wordLine);
 };
 
 const getPinYin = (words) => {
@@ -361,7 +366,7 @@ const getPinYin = (words) => {
     pinyinList[i] = pinyin.GetPinyin(words[i]);
   }
 };
-
+// 比对方法
 const contrast = (article, inputContent) => {
   correctNum.value = 0;
   errorNum.value = 0;
@@ -435,11 +440,7 @@ const timepiece = (nowTime) => {
 const complete = () => {
   if (inputWord.length == word.length) {
     console.log("stop");
-
-    completeResult.timeShow = timeShow.value;
-    completeResult.accuracy = accuracy.value;
-    completeResult.wpm = wpm.value;
-
+    stopTime(true);
     // 隐藏开始/暂停按钮
     isStart.value = false;
     console.log(wpm.value);
