@@ -163,10 +163,12 @@ const watchResult = () => {
 };
 
 const submitResult = async () => {
+  console.log(result);
   const res = await uploadResult({ result });
   const resultId = res.result._id;
   // 关闭弹窗
   store.isShowModal = false;
+  store.resultId = resultId;
   router.push({
     name: "resultPage",
     params: { resultId },

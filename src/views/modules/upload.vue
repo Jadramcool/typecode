@@ -54,8 +54,8 @@ const handleUpload = async () => {
   param.append("chunk", "0"); // 添加form表单中其他数据
   uploading.value = true;
   const res = await uploadWord(param);
-  // console.log(res);
   uploading.value = false;
+  // console.log(res);
 };
 </script>
 

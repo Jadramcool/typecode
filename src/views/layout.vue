@@ -24,10 +24,10 @@ const route = useRoute();
 const jumpPage = (key) => {
   if (key === 1) {
     router.push("/");
-    console.log(key);
   } else if (key === 2) {
-    console.log(key);
     router.push("/resultPage");
+  } else if (key === 3) {
+    router.push("/resultList");
   }
 };
 </script>

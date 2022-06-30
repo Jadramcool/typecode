@@ -24,3 +24,11 @@ export const getTotal = (authorId) => {
     params: { authorId },
   });
 };
+
+// 获取所有成绩
+export const getResultList = (authorId, articleId) => {
+  return request({
+    url: "/result/get/list",
+    params: { authorId, articleId },
+  });
+};

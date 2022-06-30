@@ -66,6 +66,9 @@ const emit = defineEmits(["changeArticle"]);
 let nowValue = ref("");
 onMounted(() => {
   getUser();
+  if (store.articleId) {
+    getArticleDetail(store.articleId);
+  }
 });
 
 const getUser = async () => {

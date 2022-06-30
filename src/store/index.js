@@ -20,7 +20,10 @@ export const mainStore = defineStore("main", {
       // token
       token: localStorage.getItem("token") || "",
       isShowModal: false,
+      // 当前选择文章id
       articleId: "",
+      // 当前结果id
+      resultId: "",
     };
   },
   //   compute修饰一些值

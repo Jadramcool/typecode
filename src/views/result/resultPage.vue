@@ -27,11 +27,6 @@
           bordered
           :pagination="false"
         >
-          <template #bodyCell="{ column, text }">
-            <template v-if="column.dataIndex === 'name'">
-              <a>{{ text }}</a>
-            </template>
-          </template>
         </a-table>
       </div>
     </div>
@@ -84,7 +79,7 @@ const columns = [
 
 let data = reactive([{}, {}]);
 
-let resultId = route.params.resultId;
+let resultId = route.params.resultId || store.resultId;
 let theResult = reactive({});
 let resultAll = reactive({});
 

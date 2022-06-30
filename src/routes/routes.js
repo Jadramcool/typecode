@@ -23,6 +23,12 @@ const routes = [
         component: () => import("../views/result/resultPage.vue"),
         meta: { title: "resultPage" },
       },
+      {
+        path: "/resultList",
+        name: "resultList",
+        component: () => import("../views/resultList/resultList.vue"),
+        meta: { title: "resultList" },
+      },
     ],
   },
   {
