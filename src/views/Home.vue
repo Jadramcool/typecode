@@ -1,19 +1,21 @@
 <template>
   <div class="flex">
-    <div class="control w-1/4">
-      <div class="switch w-full py-4 ml-10">
-        <span class="font-bold mr-2">是否展示拼音:</span>
-        <a-switch v-model:checked="isShowPinYin" />
+    <div class="w-1/4">
+      <div class="control shadow-md bg-white">
+        <div class="switch w-full py-4 ml-10">
+          <span class="font-bold mr-2">是否展示拼音:</span>
+          <a-switch v-model:checked="isShowPinYin" />
+        </div>
+        <Upload></Upload>
+        <CommonForm @change-article="getArticle"></CommonForm>
+        <Operate
+          :isStart="isStart"
+          @pause="pauseTime"
+          @stop="stopTime"
+          @reset="resetTime"
+        ></Operate>
+        <a-button type="warning" @click="showResult">测试</a-button>
       </div>
-      <Upload></Upload>
-      <CommonForm @change-article="getArticle"></CommonForm>
-      <Operate
-        :isStart="isStart"
-        @pause="pauseTime"
-        @stop="stopTime"
-        @reset="resetTime"
-      ></Operate>
-      <a-button type="warning" @click="showResult">测试</a-button>
     </div>
 
     <div class="list_body w-1/2">
@@ -86,7 +88,7 @@
       </div>
     </div>
     <div class="w-1/4">
-      <a-card title="计分板" class="result_card">
+      <a-card title="计分板" class="result_card shadow-md">
         <div class="card_body flex flex-col">
           <div class="time">{{ timeShow }}</div>
           <div class="accuracy">
@@ -142,11 +144,9 @@ onMounted(() => {
 //   "黑龙江省是冰灯的发源地，早期的冰灯是松嫩平原的农民和松花江流域的渔民冬季的照明工具。主要的制作过程是，把水倒入桶中进行冷冻形成桶状冰坨，再倒出中间未冻的清水，形成中空的“灯罩”，将灯（主要是油灯或蜡烛）放入，便不会被寒风吹灭。后来，人们在春节和元宵节期间也制做冰灯摆在门前，或烫孔穿绳让孩子提着玩，用以增加节日气氛，即形成了民间艺术的雏形。"
 // );
 
-let data = ref("");
+// let data = ref("");
 
-// let data = ref(
-//   `<p>Test</p><p>测试</p><p>你好你好你好。我喜欢你。我爱你</p><p>怎么说呢    哈哈哈</p>`
-// );
+let data = ref(`你好你好你好123`);
 
 let pinyinList = reactive([]);
 
@@ -449,6 +449,15 @@ const complete = () => {
 };
 </script>
 <style lang="scss">
+.control {
+  width: 400px;
+  padding: 10px;
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(229, 231, 235, 1);
+}
 .list {
   margin: 10px auto;
   .ant-list-item {
@@ -506,7 +515,7 @@ const complete = () => {
 .result_card {
   width: 300px;
   position: fixed;
-  top: 20px;
+  top: 80px;
   right: 20px;
   .card_body {
     padding: 10px 30px;
