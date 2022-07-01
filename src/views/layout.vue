@@ -20,13 +20,22 @@
 <script setup>
 import { useRoute } from "vue-router";
 import router from "@/routes/routes";
+import { mainStore } from "@/store/index";
+import { message } from "ant-design-vue";
 const route = useRoute();
+const store = mainStore();
 const jumpPage = (key) => {
   if (key === 1) {
+    store.resultId = "";
     router.push("/");
   } else if (key === 2) {
-    router.push("/resultPage");
+    if (store.resultId) {
+      router.push("/resultPage");
+    } else {
+      message.error("想查看成绩，你得先有一次最近成绩吧！");
+    }
   } else if (key === 3) {
+    store.resultId = "";
     router.push("/resultList");
   }
 };
