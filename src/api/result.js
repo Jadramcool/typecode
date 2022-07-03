@@ -17,7 +17,7 @@ export const getResult = (resultId) => {
   });
 };
 
-// 获取成绩
+// 获取总成绩
 export const getTotal = (authorId) => {
   return request({
     url: "/result/get/statistics",

@@ -54,7 +54,7 @@
         <div class="appraise text-center text-xl my-4">{{ speedAppraise }}</div>
       </div>
       <template #footer>
-        <a-button key="back" @click="watchResult">查看成绩详情</a-button>
+        <!-- <a-button key="back" @click="watchResult">查看成绩详情</a-button> -->
         <a-button
           key="submit"
           type="primary"
@@ -158,9 +158,9 @@ const cancel = () => {
   store.isShowModal = false;
 };
 
-const watchResult = () => {
-  router.push("/resultPage");
-};
+// const watchResult = () => {
+//   router.push("/resultPage");
+// };
 
 const submitResult = async () => {
   console.log(result);

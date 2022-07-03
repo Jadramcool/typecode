@@ -29,6 +29,12 @@ const routes = [
         component: () => import("../views/resultList/resultList.vue"),
         meta: { title: "resultList" },
       },
+      {
+        path: "/personalCenter",
+        name: "personalCenter",
+        component: () => import("../views/personalCenter/personalCenter.vue"),
+        meta: { title: "personalCenter" },
+      },
     ],
   },
   {

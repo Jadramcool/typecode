@@ -14,7 +14,7 @@
           @stop="stopTime"
           @reset="resetTime"
         ></Operate>
-        <a-button type="warning" @click="showResult">测试</a-button>
+        <!-- <a-button type="warning" @click="showResult">测试</a-button> -->
       </div>
     </div>
 
@@ -150,8 +150,6 @@ let data = ref("");
 
 let pinyinList = reactive([]);
 
-// let data = ref("123");
-// input ref
 let input = ref([]);
 // 输入的内容
 let inputValue = reactive([""]);
@@ -197,9 +195,9 @@ let stopDisabled = ref(false);
 let isStart = ref(false);
 // 完成后，传递给 result 组件的数据
 let completeResult = reactive({});
-const showResult = () => {
-  store.isShowModal = true;
-};
+// const showResult = () => {
+//   store.isShowModal = true;
+// };
 
 const getArticle = (info) => {
   // 清除计时器
@@ -358,7 +356,7 @@ const combineWordLine = (wordage) => {
   }
   // console.log(wordLine);
 };
-
+// 获取拼音
 const getPinYin = (words) => {
   let pinyin = new Pinyin();
   // 获取全拼
@@ -397,19 +395,6 @@ const contrast = (article, inputContent) => {
 // 是否开始计时
 // @change.once会触发两次，暂时不知道为什么，先用这种方法
 let startTiming = ref(true);
-// 开始计时
-// const startTime = () => {
-//   if (startTiming.value) {
-//     startTiming.value = false;
-//     let nowTime = new Date();
-//     timer = setInterval(() => {
-//       const now = timepiece(nowTime);
-//       wpm.value = ((correctNum.value / now.totalSec) * 60).toFixed(0);
-//       timeShow.value = now.time;
-//       // console.log(now);
-//     }, 1000);
-//   }
-// };
 
 const startTime = () => {
   isStart.value = true;

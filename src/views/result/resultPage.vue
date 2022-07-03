@@ -4,16 +4,18 @@
       <div class="title">本次成绩</div>
       <div class="content">
         <p>
-          本次文章《<span>{{ theResult.articleTitle }}</span
-          >》共<span>{{ theResult.wordNum }}</span
-          >字，您完成<span>{{ theResult.inputNum }}</span
-          >字。完成率为<span>{{ theResult.completion }}</span
+          本次文章《<span class="result">{{ theResult.articleTitle }}</span
+          >》共<span class="result">{{ theResult.wordNum }}</span
+          >字，<span v-if="isLoginUser">您</span><span v-else>Ta</span>完成<span
+            class="result"
+            >{{ theResult.inputNum }}</span
+          >字。完成率为<span class="result">{{ theResult.completion }}</span
           >%。
         </p>
         <p>
-          共用时<span>{{ theResult.time }}</span
-          >。速度：<span>{{ theResult.speed }}</span
-          >字/分钟。正确率：<span>{{ theResult.correct }}</span
+          共用时<span class="result">{{ theResult.time }}</span
+          >。速度：<span class="result">{{ theResult.speed }}</span
+          >字/分钟。正确率：<span class="result">{{ theResult.correct }}</span
           >%
         </p>
       </div>
@@ -32,7 +34,7 @@
     </div>
     <div class="operate">
       <a-button class="btn" type="primary" @click="jumpHome">继续打字</a-button>
-      <a-button class="btn">查看成绩</a-button>
+      <a-button class="btn" @click="jumpResult">查看成绩</a-button>
       <a-button class="btn" type="dashed">上传文章</a-button>
     </div>
   </div>
@@ -82,6 +84,8 @@ let data = reactive([{}, {}]);
 let resultId = route.params.resultId || store.resultId;
 let theResult = reactive({});
 let resultAll = reactive({});
+// 判断是否是登录用户查看成绩
+let isLoginUser = ref(true);
 
 let authorId = localStorage.getItem("userId");
 onMounted(async () => {
@@ -112,6 +116,11 @@ const setTable = () => {
 const getTheRequest = async (id) => {
   const res = await getResult(id);
   let result = res.result;
+  if (result.authorId._id === localStorage.getItem("userId")) {
+    isLoginUser.value = true;
+  } else {
+    isLoginUser.value = false;
+  }
   theResult.articleTitle = result.articleId.title;
   theResult.wordNum = result.wordNum;
   theResult.inputNum = result.inputNum;
@@ -131,9 +140,13 @@ const getTotalResult = async (id) => {
   resultAll.maxSpeed = item.maxSpeed;
   resultAll.timeAll = item.timeAll;
 };
-
+// 跳转首页
 const jumpHome = () => {
   router.push("/");
+};
+// 跳转成绩统计
+const jumpResult = () => {
+  router.push("/resultList");
 };
 </script>
 <style lang="scss" scoped>
@@ -155,7 +168,7 @@ const jumpHome = () => {
   .content {
     margin: 10px 0;
     p {
-      span {
+      .result {
         padding: 0 5px;
         font-size: 18px;
         color: rgb(225, 136, 3);

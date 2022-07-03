@@ -2,6 +2,33 @@
   <div class="body w-3/4 mx-auto bg-slate-200">
     <div class="result_list">
       <div class="title">成绩统计</div>
+      <div class="login_result flex">
+        <div class="type_count text-center rounded bg-gray-50">
+          <div>打字记录</div>
+          <div>
+            <span class="text-lg font-bold">{{ loginResultCount }}</span> 次
+          </div>
+        </div>
+        <div class="type_time text-center rounded bg-gray-50">
+          <div>累计测试</div>
+          <div>
+            <span class="text-lg font-bold">
+              {{
+                proxy.dayjs(loginResultInfo.timeAll * 1000).format("mm:ss")
+              }}</span
+            >
+          </div>
+        </div>
+        <div class="type_speed text-center rounded bg-gray-50">
+          <div>打字速度</div>
+          <div>
+            <span class="text-lg font-bold">{{
+              loginResultInfo.averageSpeed
+            }}</span>
+            字/分
+          </div>
+        </div>
+      </div>
       <div class="content">
         <a-form name="basic" autocomplete="off" class="flex justify-between">
           <a-form-item label="用户名" name="username">
@@ -56,9 +83,10 @@ import {
   reactive,
   ref,
   getCurrentInstance,
+  toRefs,
 } from "@vue/runtime-core";
 import { useRoute } from "vue-router";
-import { getResultList } from "@/api/result";
+import { getResultList, getTotal } from "@/api/result";
 import router from "@/routes/routes";
 import { storeToRefs } from "pinia";
 import { mainStore } from "@/store/index";
@@ -70,6 +98,9 @@ let searchAuthorName = ref("");
 let searchArticleId = ref("");
 let resultList = reactive([]);
 let resultCount = ref(0);
+let loginResultList = reactive([]);
+let loginResultInfo = reactive({});
+let loginResultCount = ref(0);
 const columns = [
   {
     title: "时间",
@@ -110,17 +141,27 @@ const columns = [
 ];
 
 let authorId = localStorage.getItem("userId");
+const username = localStorage.getItem("username");
 onMounted(() => {
   getResult();
+  getLoginResult(username);
 });
 const getResult = async (authorName, articleId) => {
   resultList.length = 0;
   const res = await getResultList(authorName, articleId);
-  //   resultList = res.resultList;
   res.resultList.map((item) => {
     resultList.push(item);
   });
   resultCount.value = res.resultCount;
+};
+
+const getLoginResult = async (authorName, articleId) => {
+  resultList.length = 0;
+  const res = await getResultList(authorName, articleId);
+  loginResultCount.value = res.resultCount;
+  const res2 = await getTotal(authorId);
+  const temp = res2.resultAll[0];
+  loginResultInfo = Object.assign(loginResultInfo, temp);
 };
 
 const selectAuthor = (id) => {
@@ -167,6 +208,13 @@ const onView = (id) => {
     :deep(.ant-table-cell) {
       font-size: 14px;
     }
+  }
+}
+.login_result {
+  margin: 10px;
+  div {
+    margin: 0 8px;
+    padding: 5px;
   }
 }
 </style>
