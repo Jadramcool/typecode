@@ -1,15 +1,15 @@
 <template>
-  <div class="body w-3/4 mx-auto bg-slate-200">
+  <div class="w-3/4 mx-auto body bg-slate-200">
     <div class="result_list">
       <div class="title">成绩统计</div>
-      <div class="login_result flex">
-        <div class="type_count text-center rounded bg-gray-50">
+      <div class="flex login_result">
+        <div class="text-center rounded type_count bg-gray-50">
           <div>打字记录</div>
           <div>
             <span class="text-lg font-bold">{{ loginResultCount }}</span> 次
           </div>
         </div>
-        <div class="type_time text-center rounded bg-gray-50">
+        <div class="text-center rounded type_time bg-gray-50">
           <div>累计测试</div>
           <div>
             <span class="text-lg font-bold">
@@ -19,7 +19,7 @@
             >
           </div>
         </div>
-        <div class="type_speed text-center rounded bg-gray-50">
+        <div class="text-center rounded type_speed bg-gray-50">
           <div>打字速度</div>
           <div>
             <span class="text-lg font-bold">{{
@@ -60,6 +60,9 @@
             </template>
             <template v-else-if="column.dataIndex === 'articleTitle'">
               <a @click="selectArticle(record.articleId)">{{ text }}</a>
+            </template>
+            <template v-else-if="column.dataIndex === 'time'">
+              <span>{{ proxy.dayjs(text).format("mm:ss") }}</span>
             </template>
             <template v-else-if="column.dataIndex === 'speed'">
               <span>{{ text }} WPM</span>

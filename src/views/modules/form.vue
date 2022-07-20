@@ -1,8 +1,8 @@
 <template>
   <div class="ml-10">
     <span class="font-bold">选择文章：</span>
-    <div class="form_body ml-10">
-      <div class="select_user mb-4">
+    <div class="ml-10 form_body">
+      <div class="mb-4 select_user">
         <label for="user">用户：</label>
         <a-select
           id="user"
@@ -28,6 +28,7 @@
           style="width: 200px"
           placeholder="Select a person"
           @change="handleChangeArticle"
+          @dropdownVisibleChange="handleGetArticle"
         >
           <a-select-option
             v-for="item in articleList"
@@ -94,6 +95,19 @@ const handleChange = (value) => {
   getArticle(form.limit, form.offset, form.category, value, form.title);
   articleList.value = [];
   nowValue.value = "";
+};
+
+const handleGetArticle = () => {
+  console.log(userList.value.length);
+  if (userList.value.length != 0) {
+    getArticle(
+      form.limit,
+      form.offset,
+      form.category,
+      form.authorId,
+      form.title
+    );
+  }
 };
 
 // 选择文章
